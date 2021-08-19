@@ -1,0 +1,64 @@
+Index.php
+
+<html>
+<head>
+<script type="text/javascript" src="jquery.js"></script>
+<script>
+function main()
+{
+ var str=$("#key").load("getToken.php",function (responseText) {
+                                                 $("#key").val(responseText);
+                                               }
+      );
+ setTimeout("main()", 100000);
+}
+</script>
+</head>
+ <body onload='main()'>
+ <form name="f" action="poster.php" method="post">
+  <input type="text" name="text"/><br>
+  <input type="text" name="key" id="key" value=""/><br>
+  <input type="submit">
+ </form>
+</body>
+</html>
+
+getToken.php
+
+<?php
+ $key=date("Y-m-d H:i:s");
+ $hash=sha1($key.'mySecretKey');
+ echo $key.'#'.$hash;
+?>
+poster.php
+
+<?php
+if (!isset($_POST['key']))
+ exit;
+
+$parts = explode('#',$_POST['key'],2);
+$key = $parts[0];
+$hash = $parts[1];
+
+$date1 = $key;
+$date2 = date("Y-m-d H:i:s");
+$diff = abs(strtotime($date2) - strtotime($date1)); 
+$years   = floor($diff / (365*60*60*24)); 
+$months  = floor(($diff - $years * 365*60*60*24) / (30*60*60*24)); 
+$days    = floor(($diff - $years * 365*60*60*24 - $months*30*60*60*24)/ (60*60*24));
+$hours   = floor(($diff - $years * 365*60*60*24 - $months*30*60*60*24 - $days*60*60*24)/ (60*60)); 
+$minuts  = floor(($diff - $years * 365*60*60*24 - $months*30*60*60*24 - $days*60*60*24 - $hours*60*60)/ 60); 
+$seconds = floor(($diff - $years * 365*60*60*24 - $months*30*60*60*24 - $days*60*60*24 - $hours*60*60 - $minuts*60)); 
+
+if ($seconds < 5)
+ echo $seconds.' Too fast, must be a naughty bot <br>';
+else if ($seconds>5 && $seconds < 600)
+ echo $seconds.' In time <br>';
+else
+ echo $seconds.' time out <br>';
+
+if ($hash == (sha1($key.'sou')))
+ echo $_POST['text'];
+else
+ echo 'You are a bot !';
+?>
